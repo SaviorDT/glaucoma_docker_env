@@ -1,23 +1,25 @@
 FROM nginx:latest
 
-RUN apt update && apt install -y git
+RUN apt update
+RUN apt upgrade -y
+RUN apt install -y git curl
 
 RUN mkdir -p /usr/share/nginx/html/frontend
 RUN mkdir -p /usr/share/nginx/html/backend
 
-# COPY id_rsa_frontend /root/.ssh/id_rsa_frontend
-# RUN chmod 600 /root/.ssh/id_rsa_frontend
-COPY frontend /usr/share/nginx/html/frontend
+# Install nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 
+RUN apt install -y nodejs
 
-# COPY id_rsa_backend /root/.ssh/id_rsa_backend
-# RUN chmod 600 /root/.ssh/id_rsa_backend
+# Build glaucoma service 
+COPY glaucoma /usr/share/nginx/html/frontend
+WORKDIR /usr/share/nginx/html/frontend
+RUN npm install
+RUN npm run build
 
-# RUN touch /root/.ssh/known_hosts
-# RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+# Remove nodejs
+RUN apt remove nodejs -y
 
-# RUN GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa_frontend" git clone git@github.com:SaviorDT/glaucoma.git /usr/share/nginx/html/frontend
-# RUN GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa_backend" git clone git@github.com:SaviorDT/glaucoma_backend.git /usr/share/nginx/html/backend
-
-# RUN apt install -y php8.2 php8.2-fpm php8.2-mysql php8.2-pgsql
-
-COPY nginx.conf /etc/nginx/nginx.conf
+# Nginx confiuration file
+RUN mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak
+COPY glaucoma.conf /etc/nginx/conf.d/glaucoma.conf
