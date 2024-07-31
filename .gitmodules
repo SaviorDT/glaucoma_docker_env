@@ -1,0 +1,3 @@
+[submodule "nginx/glaucoma"]
+	path = nginx/glaucoma
+	url = https://github.com/SaviorDT/glaucoma.git
